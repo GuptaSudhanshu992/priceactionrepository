@@ -25,8 +25,7 @@ SECRET_KEY = 'django-insecure-bplo4@u4fb-ije++qo(k6*j#yz3o#dcsoyq%&cvm544@6%yt%7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -34,6 +33,8 @@ INSTALLED_APPS = [
     'members',
     'blog',
     'tinymce',
+    'rest_framework',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,11 +46,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'members.middleware.JWTAuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'priceactionrepository.urls'
@@ -65,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'members.context_processors.user_status',
             ],
         },
     },
@@ -124,3 +128,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'members.CustomUser'
+
+JWT_SECRET_KEY = 'nUEkqRn/WBix0j/2ePRvs8UGO6qjexZeNwsCoF9SBhR/wQU6YQbpKNUS6SNl62LL0S4dIQZDne6jaiG0EZLx0Q=='
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True

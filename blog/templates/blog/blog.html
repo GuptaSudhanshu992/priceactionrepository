@@ -3,6 +3,20 @@
 {% block title %}Blog{% endblock title %}
 
 {% block content %}
+
+	{% if messages %}
+		<div id="messages">
+			{% for message in messages %}
+				<div class="alert alert-success alert-dismissible fade show" role="alert">
+					{{ message }}
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+
 	<div class="row">
 		<div class="col-md-8 col-12 mx-md-auto mx-3 mt-5 mb-5 p-3">
 			<h1><strong>Price Action Blog</strong></h1>
@@ -11,8 +25,8 @@
 	</div>
 	
 	{% for object in object_list %}
-	<div class="row my-3">
-		<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border rounded-3 p-3">
+	<div class="row my-3" onclick="window.location.href='{% url 'blog_post' object.id|escapejs %}';">
+		<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border border-dark p-3" id="blog-card">
 			<h3><strong>{{ object.title }}</strong></h3>
 			<p class="text-muted">{{ object.date }}</p>
 			<p class="text-muted">Posted by {{ object.author.username }}</p>
@@ -26,8 +40,6 @@
 			{% else %}
 				<p class="text-muted">{{ object.likes.count }} people like this post</p>
 			{% endif %}
-			
-			<a class="btn btn-outline-dark" href="{% url 'blog_post' object.id %}">Read More</a>
 		</div>
 	</div>
 	{% endfor %}

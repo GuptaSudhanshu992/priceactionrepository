@@ -1,1 +1,49 @@
- 
+{% extends 'blog/base.html' %}
+
+{% block content %}
+
+{% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
+
+	<div class="row justify-content-center mt-5 mb-5">
+		<div class="col-md-6">
+			<h2 class="text-center mb-5 mt-5"><strong>Login</strong></h2>
+			<form action="{% url 'login_api' %}" method="POST">
+				{% csrf_token %}
+				<div class="form-group">
+					<input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+				</div>
+				<div class="form-group">
+					<input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+				</div>
+				<button type="submit" class="btn btn-success btn-block">Login</button>
+			</form>
+			<div class="text-right mt-2">
+				<a class="text-success" href="/forgot-password">Forgot Password?</a>
+			</div>
+			<hr>
+			<div class="text-center">
+				<p>Or login using</p>
+				<div class="d-flex flex-row">
+					<a href="/auth/google" class="btn btn-danger mr-2 flex-grow-1">
+						<i class="fab fa-google"></i>
+					</a>
+					<a href="/auth/facebook" class="btn btn-primary mr-2 flex-grow-1">
+						<i class="fab fa-facebook-f"></i>
+					</a>
+					<a href="/auth/apple" class="btn btn-dark flex-grow-1">
+						<i class="fab fa-apple"></i>
+					</a>
+				</div>
+			</div>
+			<div class="text-center mt-3 mb-5">
+				<p>Don't have an account? <a class="text-success" href="{% url 'register' %}">Register here</a></p>
+			</div>
+		</div>
+	</div>
+{% endblock content %}
