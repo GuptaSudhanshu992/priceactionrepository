@@ -4,19 +4,6 @@
 
 {% block content %}
 
-	{% if messages %}
-		<div id="messages">
-			{% for message in messages %}
-				<div class="alert alert-success alert-dismissible fade show" role="alert">
-					{{ message }}
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-			{% endfor %}
-		</div>
-	{% endif %}
-
 	<div class="row">
 		<div class="col-md-8 col-12 mx-md-auto mx-3 mt-5 mb-5 p-3">
 			<h1><strong>Price Action Blog</strong></h1>
@@ -29,61 +16,62 @@
 		<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border border-dark p-3" id="blog-card">
 			<h3><strong>{{ object.title }}</strong></h3>
 			<p class="text-muted">{{ object.date }}</p>
-			<p class="text-muted">Posted by {{ object.author.username }}</p>
+			<p class="text-muted">Posted by {{ object.author.email }}</p>
 			
 			<div class="my-3">
 				{{ object.content|truncatewords_html:50|safe }}
 			</div>
 			
-			{% if object.likes.count == 1 %}
-				<p class="text-muted">{{ object.likes.count }} person likes this post</p>
-			{% else %}
+			{% if object.likes.count > 1 %}
 				<p class="text-muted">{{ object.likes.count }} people like this post</p>
 			{% endif %}
 		</div>
 	</div>
 	{% endfor %}
 	
-	<nav>
-		<ul class="pagination">
-			<div class="mx-auto d-flex flex-row mt-5">
-			{% if page_obj.has_previous %}
-					<li class="page-item">
-						<a class="page-link" href="?page=1">First</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
-					</li>
-			{% else %}
-					<li class="page-item disabled">
-						<a class="page-link" href="">First</a>
-					</li>
-					<li class="page-item disabled">
-						<a class="page-link" href="">&laquo;</a>
-					</li>
-			{% endif %}
-		
+	{% if page_obj.paginator.num_pages > 1 %}
+		<nav>
+			<ul class="pagination">
+				<div class="mx-auto d-flex flex-row mt-5">
+					{% if page_obj.has_previous %}
+							<li class="page-item">
+								<a class="page-link" href="?page=1">First</a>
+							</li>
+							<li class="page-item">
+								<a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+							</li>
+					{% else %}
+							<li class="page-item disabled">
+								<a class="page-link" href="">First</a>
+							</li>
+							<li class="page-item disabled">
+								<a class="page-link" href="">&laquo;</a>
+							</li>
+					{% endif %}
+						
+						<li class="page-item page-item-primary-dark">
+							<a class="page-link" href="#">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
+						</li>
+						
+					{% if page_obj.has_next %}
+							<li class="page-item">
+								<a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+							</li>
+							<li class="page-item">
+								<a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+							</li>
+					{% else %}
+							<li class="page-item disabled">
+								<a class="page-link" href="">&raquo;</a>
+							</li>
+							<li class="page-item disabled">
+								<a class="page-link" href="">Last</a>
+							</li>
+					{% endif %}
 				
-				<li class="page-item page-item-primary-dark">
-					<a class="page-link" href="#">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
-				</li>
-				
-			{% if page_obj.has_next %}
-					<li class="page-item">
-						<a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-					</li>
-			{% else %}
-					<li class="page-item disabled">
-						<a class="page-link" href="">&raquo;</a>
-					</li>
-					<li class="page-item disabled">
-						<a class="page-link" href="">Last</a>
-					</li>
-			{% endif %}
-			</div>
-		</ul>
-	</nav>
+				</div>
+			</ul>
+		</nav>
+	{% endif %}
+
 {% endblock content %}

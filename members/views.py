@@ -1,89 +1,91 @@
 from django.shortcuts import render, redirect
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.request import Request
-from .serializers import UserSerializer
+from django.views import View
 from .models import CustomUser
 import jwt, datetime
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate, login, logout
+import re
 
-class RegisterView(APIView):    
+User = get_user_model()
+
+class RegisterView(View):    
     def get(self, request):
-        return render(request, 'members/signup.html')
+        if request.user is not None:
+            if request.user.is_authenticated:
+                messages.info(request, 'Hi, You already seemed to be logged in from an account, kindly logout if you want to create a new account!')
+                return redirect('/blog/')
+        return render(request=request, template_name='members/signup.html')
         
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        messages.success(request, 'Registration successful!')
-        
-        login_view = LoginView()
-        login_response = login_view.post(request)
-        
-        if login_response.status_code == 200:
-            response = redirect('blog')
-            response.set_cookie(key="token", value=login_response.data['token'], httponly=True, max_age=60*60*24*7)
-            return response
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        if not firstname or not email or not password1 or not password2:
+            messages.warning(request, 'All fields are required.')
+        elif User.objects.filter(email=email).exists():
+            messages.warning(request, 'Email is already registered.')
+        elif len(password1)<6 or len(password1)>20:
+            messages.warning(request, 'Password should be between 6 and 20 characters in length.')
+        elif not bool(re.search(r'[A-Z]', password1)):
+            messages.warning(request, 'Password is missing an uppercase letter')
+        elif not bool(re.search(r'[a-z]', password1)):
+            messages.warning(request, 'Password is missing a lowercase letter')
+        elif not bool(re.search(r'[0-9]', password1)):
+            messages.warning(request, 'Password must contain at least one digit.')
+        elif not bool(re.search(r'[!@#$%^&*()_+{}\[\]:;"\'<>,.?~`]', password1)):
+            messages.warning(request, 'Password must contain one of these special characters [!@#$%^&*()_+{}\[\]:;"\'<>,.?~`]')
+        elif password1 != password2:
+            messages.warning(request, 'Passwords do not match.')
         else:
-            messages.error(request, 'Registration in completed, you may log into your account now.')
-            return redirect('login')
+            try:
+                user = User.objects.create_user(
+                    email=email,
+                    password=password1,
+                    firstname=firstname,
+                    lastname=lastname
+                )
+                user.save()
+                login(request, user)
+                messages.success(request, 'You have registered successfully, Welcome to the team!')
+                return redirect('/blog/')
+            except ValidationError as e:
+                messages.warning(request, str(e))
+            except Exception as e:
+                messages.warning(request, str(e))
+        return render(request=request, template_name='members/signup.html')
 
-class LoginView(APIView):
+class LoginView(View):
     def get(self, request):
-        return render(request, 'members/login.html')
+        if request.user is not None:
+            if request.user.is_authenticated:
+                messages.info(request, 'Please logout first, if you want to login from a different account.')
+                return redirect('/blog/')
+        return render(request=request, template_name='members/login.html')
     
     def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
-        
-        user = CustomUser.objects.filter(email=email).first()
-        
-        if user is None:
-            raise AuthenticationFailed('User not found!')
-            
-        if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect Password')
-        
-        payload = {
-            'id':user.id,
-            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            'iat':datetime.datetime.utcnow()
-        }
-        token = jwt.encode(payload, settings.JWT_SECRET_KEY , algorithm='HS256')
-        messages.success(request, 'Welcome Back!')
-        response = Response({
-            "message":"success",
-            "token":token,
-        })
-        response = redirect('blog')
-        response.set_cookie(key="token", value=token, httponly=True, max_age=60*60*24*7)
-        return response
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Welcome back!')
+            return redirect('/blog/')
+        else:
+            messages.warning(request, 'Invalid email or password.')
+        return render(request=request, template_name='members/login.html')
 
-class UserView(APIView):
+class UserView(View):
     def get(self, request):
-        token=request.COOKIES.get('token')
-        
-        if not token:
-            raise AuthenticationFailed('Unauthenticated')
+        return null
 
-        try:
-            payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-            
-        user = CustomUser.objects.filter(id=payload['id']).first()
-        
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
-
-class LogoutView(APIView):
+class LogoutView(View):
     def post(self, request):
-        response = Response({
-            'message':'success'
-        })
-        response = redirect('blog')
-        response.delete_cookie('token')
-        return response
+        logout(request)
+        messages.success(request, 'Logged Out Successfully!')
+        return redirect('/blog/')

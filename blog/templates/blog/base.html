@@ -21,59 +21,94 @@
 	</style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+	<link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet'>
 </head>
 <body>
 	<div class="container col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3">
-		<nav class="navbar navbar-expand-lg navbar-light">
-			<a class="navbar-brand" href="#">
-				<img src="" width="30" height="30" class="d-inline-block align-top" alt="">
+		<nav class="navbar navbar-expand-lg navbar-light border-bottom">
+			<a class="navbar-brand" href="{% url 'blog' %}" style="font-family: Oswald;">
+				<!-- <img src="" width="30" height="30" class="d-inline-block align-top" alt=""> -->
 				Price Action Repository
 			</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav ml-auto">
-					<li class="nav-item {% if request.resolver_match.url_name == 'blog' %}active{% endif %}">
-						<a class="nav-link" href="{% url 'blog' %}">Blog</a>
+				<ul class="navbar-nav ml-auto" style="font-family: Oswald;font-weight:700;">
+					<li class="nav-item mr-3 {% if request.resolver_match.url_name == 'blog' %}active{% endif %}">
+						<a class="nav-link" href="{% url 'blog' %}">BLOG</a>
 					</li>
-					{% if user_is_authenticated %}
-						<li class="nav-item" id="signout-btn">
+					{% if request.user.is_authenticated %}
+						<li class="d-flex nav-item align-items-center" id="signout-btn">
 							<form action="{% url 'logout' %}" method="POST">
 								{% csrf_token %}
-								<button class="btn btn-outline-danger" type="submit">Sign Out</button>
+								<button class="btn btn-sm btn-outline-dark border-0" type="submit">SIGN OUT</button>
 							</form>
 						</li>
 					{% else %}
-						<li class="nav-item" id="signin-btn">
+						<li class="d-flex nav-item align-items-center">
 							<div class="btn-group" role="group" aria-label="myaccount">
-							  <a type="button" class="btn btn-success" href="{% url 'register' %}">Sign Up</a>
-							  <a type="button" class="btn btn-outline-success" href="{% url 'login' %}">Sign In</a>
+							  <a type="button" class="btn btn-success btn-sm rounded-5" href="{% url 'register' %}">SIGN UP</a>
+							  <a type="button" class="btn btn-outline-success btn-sm" href="{% url 'login' %}">SIGN IN</a>
 							</div>
 						</li>
 					{% endif %}
 				</ul>
 			</div>
 		</nav>
+	
+	{% if messages %}
+		<div id="messages">
+			{% for message in messages %}
+				<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+					{{ message }}
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+	
 	{% block content %}
 	
 	{% endblock content %}
 
-	  <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-		<div class="col-md-4 d-flex align-items-center">
-		  <span class="mb-3 mb-md-0 text-body-secondary">&copy; 2024 Company, Inc</span>
+	  <footer class="col-md-4 py-4 my-4 border-top" style="font-family: Oswald;>
+		<div class="text-center">
+		  <p class="mb-3 mb-md-0 text-body-secondary">&copy; 2024 Price Action Repository</p>
 		</div>
-
-		<ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
-		  <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#twitter"/></svg></a></li>
-		  <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#instagram"/></svg></a></li>
-		  <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#facebook"/></svg></a></li>
-		</ul>
 	  </footer>
 	</div>
     
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<script>
+		function togglePasswordVisibility(passwordID, togglebuttonID){
+			const passwordField = document.getElementById(passwordID);
+            const toggleIcon = document.getElementById(togglebuttonID);
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+		}
+		
+		function toggleAlert(elementID, alertMsgId) {
+            const alertElement = document.getElementById(alertMsgId);
+			if (elementID=='password1'){
+				alertElement.style.display = 'block';
+				alertElement.classList.add('show');
+            } else {
+                alertElement.classList.remove('show');
+				alertElement.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

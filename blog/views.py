@@ -12,10 +12,10 @@ class DetailArticleView(DetailView):
     model = BlogPost
     template_name = 'blog/blog_post.html'
     
-    def get_context_data(self, *args, **kwargs):
+    '''def get_context_data(self, *args, **kwargs):
         context = super(DetailArticleView, self).get_context_data(*args, **kwargs)
         context['liked_by_user'] = False
         blogpost = BlogPost.objects.get(id=self.kwargs.get('pk'))
         if blogpost.likes.filter(pk=self.request.user.id).exists():
             context['liked_by_user'] = True
-        return context
+        return context'''

@@ -1,25 +1,23 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
-
-{% if messages %}
-    <div class="alert alert-info">
-        {% for message in messages %}
-            {{ message }}
-        {% endfor %}
-    </div>
-{% endif %}
-
 	<div class="row justify-content-center mt-5 mb-5">
 		<div class="col-md-6">
 			<h2 class="text-center mb-5 mt-5"><strong>Login</strong></h2>
-			<form action="{% url 'login_api' %}" method="POST">
+			<form action="{% url 'login' %}" method="POST">
 				{% csrf_token %}
 				<div class="form-group">
 					<input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
 				</div>
 				<div class="form-group">
-					<input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+					<div class="input-group">
+						<input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
+						<div class="input-group-append">
+							<span class="input-group-text btn-outline-secondary" style="cursor: pointer;" id="togglePassword" onclick="togglePasswordVisibility('password','toggleIcon')">
+								<i class="fa fa-eye" id="toggleIcon"></i>
+							</span>
+						</div>
+					</div>
 				</div>
 				<button type="submit" class="btn btn-success btn-block">Login</button>
 			</form>

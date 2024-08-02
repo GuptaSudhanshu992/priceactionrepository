@@ -4,19 +4,49 @@
 	<div class="row justify-content-center mt-5 mb-5">
 		<div class="col-md-6">
 			<h2 class="text-center mb-5 mt-5"><strong>Sign Up</strong></h2>
-			<form action="{% url 'register_api' %}" method="POST">
+			<form action="{% url 'register' %}" method="POST">
 				{% csrf_token %}
-				<div class="form-group">
-					<input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+				<div class="form-group d-flex">
+					<input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter your first name" required>
+					<input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter your last name" >
 				</div>
 				<div class="form-group">
 					<input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" required>
 				</div>
 				<div class="form-group">
-					<input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+					<div class="input-group">
+						<input type="password" class="form-control" id="password1" name="password1" onfocus="toggleAlert('password1', 'formPasswordDetails')" onblur="toggleAlert('anythingelse', 'formPasswordDetails')" placeholder="Enter your password" required>
+						<div class="input-group-append">
+							<span class="input-group-text btn-outline-secondary" style="cursor: pointer;" id="togglePassword1" onclick="togglePasswordVisibility('password1','toggleIcon1')">
+								<i class="fa fa-eye" id="toggleIcon1"></i>
+							</span>
+						</div>
+					</div>
 				</div>
 				<div class="form-group">
-					<input type="password" class="form-control" id="confirmPassword" name="password2" placeholder="Confirm your password" required>
+					<div class="input-group" onclick="toggleAlert('password2', 'formPasswordDetails')">
+						<input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm your password" required>
+						<div class="input-group-append">
+							<span class="input-group-text btn-outline-secondary" style="cursor: pointer;" id="togglePassword2" onclick="togglePasswordVisibility('password2','toggleIcon2')">
+								<i class="fa fa-eye" id="toggleIcon2"></i>
+							</span>
+						</div>
+					</div>
+				</div>
+				<div class="alert alert-info alert-dismissible fade" id="formPasswordDetails" role="alert" style="display:none;">
+					<strong>Password Requirements:</strong><br>
+						Please ensure your password meets the following criteria:
+						<ul>
+							<li>Contains at least one capital letter (A-Z)</li>
+							<li>Includes at least one small letter (a-z)</li>
+							<li>Has at least one digit (0-9)</li>
+							<li>Contains at least one special character [!@#$%^&*()_+{}:;"'<>,.?~`]</li>
+							<li>Is between 6 and 20 characters in length</li>
+						</ul>
+					Thank you for following these guidelines to help keep your account secure!
+					<button type="button" class="close" aria-label="Close" onclick="toggleAlert('password2', 'formPasswordDetails')">
+						<span aria-hidden="true">&times;</span>
+					</button>
 				</div>
 				<button type="submit" class="btn btn-success btn-block">Sign Up</button>
 			</form>
