@@ -6,5 +6,5 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', BlogView.as_view(), name='blog'),
-    path('<int:pk>/', DetailArticleView.as_view(), name='blog_post'),
+    path('<slug:post_url>/', DetailArticleView.as_view(), name='blogpost'),
 ]

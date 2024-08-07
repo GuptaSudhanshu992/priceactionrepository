@@ -2,22 +2,19 @@
 
 {% block title %}Blog{% endblock title %}
 
+{% block sectionheading %}Blog Posts{% endblock sectionheading %}
+{% block subsectionheading %}Explore the latest updates, news, and insights.{% endblock subsectionheading %}
+
 {% block content %}
 
-	<div class="row">
-		<div class="col-md-8 col-12 mx-md-auto mx-3 mt-5 mb-5 p-3">
-			<h1><strong>Price Action Blog</strong></h1>
-			<h5 class="text-muted">A blog about Django and Python</h5>
-		</div>
-	</div>
-	
 	{% for object in object_list %}
-	<div class="row my-3" onclick="window.location.href='{% url 'blog_post' object.id|escapejs %}';">
-		<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border border-dark p-3" id="blog-card">
+	<div class="row my-3" onclick="window.location.href='{% url 'blogpost' object.post_url %}';">
+		<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border border-grey p-3" id="blog-card">
+			<div class="image-container" style="width:100%;height:250px;overflow:auto;">
+				<img class="" style="width:100%;height:100%;object-fit:cover;top:0;left:0;" src="{{ object.featured_image.image.url }}" alt="{{ object.featured_image.alt }}">
+			</div>
 			<h3><strong>{{ object.title }}</strong></h3>
-			<p class="text-muted">{{ object.date }}</p>
-			<p class="text-muted">Posted by {{ object.author.email }}</p>
-			
+			<p class="text-muted">{{ object.author.email }} &#9913; {{ object.date }} &#9913; {{ object.reading_time }} min read</p>
 			<div class="my-3">
 				{{ object.content|truncatewords_html:50|safe }}
 			</div>

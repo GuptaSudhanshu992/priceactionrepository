@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Welcome Email</title>
+	<style>
+		body {{
+		font-family: Arial, sans-serif;
+			color: #333;
+			line-height: 1.6;
+			margin: 0;
+			padding: 0;
+		}}
+		.container {{
+			width: 100%;
+			max-width: 600px;
+			margin: 0 auto;
+			padding: 20px;
+			background-color: #f4f4f4;
+		}}
+		.header {{
+			text-align: center;
+			padding: 10px 0;
+			background-color: #007BFF;
+			color: #fff;
+		}}
+		.header h1 {{
+			margin: 0;
+			font-size: 24px;
+		}}
+		.content {{
+			padding: 20px;
+			background-color: #fff;
+			border-radius: 5px;
+		}}
+		.content h2 {{
+			font-size: 20px;
+			margin-top: 0;
+		}}
+		.content p {{
+			margin: 0 0 10px;
+		}}
+		.footer {{
+			text-align: center;
+			padding: 10px;
+			background-color: #e9ecef;
+			font-size: 14px;
+		}}
+		.footer a {{
+			color: #007BFF;
+			text-decoration: none;
+		}}
+		.footer a:hover {{
+			text-decoration: underline;
+		}}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>Welcome to Price Action Repository!</h1>
+		</div>
+		<div class="content">
+			<h2>Hello {{firstname}} {{lastname}},</h2>
+			<p>Thank you for joining Price Action Repository! We're excited to have you on board.</p>
+			<p>Your account has been successfully created. You can now start exploring our features and services.</p>
+			<p>If you have any questions or need assistance, feel free to reach out to our support team at <a href="mailto:support@equityanalysis.co.in">support@equityanalysis.co.in</a>.</p>
+			<p>Best regards,<br>
+			The Price Action Repository Team</p>
+		</div>
+		<div class="footer">
+			<p>© 2024 Price Action Repository. All rights reserved.</p>
+		</div>
+	</div>
+</body>
+</html>

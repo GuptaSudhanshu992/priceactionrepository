@@ -1,47 +1,55 @@
 {% extends 'blog/base.html' %}
 {% load static %}
+
+{% block sectionheading %}{{ object.title }}{% endblock sectionheading %}
+{% block subsectionheading %}&#128197;{{ object.date }}   &#128337;{{ object.reading_time }} min read{% endblock subsectionheading %}
+
 {% block content %}
-<div class="row">
-	<div class="col-md-8 col-12 mx-md-auto mb-3 pb-2 mx-3">
-		<h1>{{ object.title }}</h1>
-		<p class="text-muted">{{ object.author.username }}</p>
-		<p class="text-muted">{{ object.date }}</p>
-		
-		{% if request.user.username == object.author.username %}
-			<div class="pb-3"> 
-				<a class="link-danger" href="">Delete this post</a>
+	<div class="row">
+		<div class="col">
+			<div class="d-flex justify-content-center sticky-top">
+				<button class="btn btn-outline-success" onclick="window.history.back();"> Go Back</button>
 			</div>
-		{% endif %}
-		<div class="text-justify">
-			<img src="{{ object.featured_image.image.url }}" alt="{{ object.featured_image.alt }}" width='100%' height='500'>
-			{{ object.content|safe }}
+		</div>
+		<div class="col-md-8 col-12 mx-md-auto mb-3 pb-2 mx-3">
+			<div class="text-justify" id="content-container">
+				<img src="{{ object.featured_image.image.url }}" alt="{{ object.featured_image.alt }}" width='100%' height='500'>
+				{{ object.content|safe }}
+			</div>
 		</div>
 	</div>
-</div>
-<!--
-<div class="row my-3">
-	<div class="col-md-8 col-12 mx-md-auto mx-3">
-		{% if object.likes.count > 1 %}
-			<p>{{ object.likes.count }} people like this post</p>
-		{% endif %}
-		
-		
-		{% if request.user.is_authenticated %}
-			{% if liked_by_user %}
-				<form method="POST" action="{% url 'like_article' object.id %}">
-					{% csrf_token %}
-					<button class="btn btn-outline-secondary"><ion-icon name="thumbs-down"></ion-icon> Unlike this post</button>
-				</form>
-			{% else %}
-				<form method="POST" action="">
-					{% csrf_token %}
-					<button class="btn btn-outline-success"><ion-icon name="thumbs-up"></ion-icon> Like this post</button>
-				</form>
+	<!--
+	<div class="row my-3">
+		<div class="col-md-8 col-12 mx-md-auto mx-3">
+			{% if object.likes.count > 1 %}
+				<p>{{ object.likes.count }} people like this post</p>
 			{% endif %}
-		{% else %}
-			<button class="btn btn-outline-success" disabled>Login to like this post</button>
-		{% endif %}
+			
+			
+			{% if request.user.is_authenticated %}
+				{% if liked_by_user %}
+					<form method="POST" action="{% url 'like_article' object.id %}">
+						{% csrf_token %}
+						<button class="btn btn-outline-secondary"><ion-icon name="thumbs-down"></ion-icon> Unlike this post</button>
+					</form>
+				{% else %}
+					<form method="POST" action="">
+						{% csrf_token %}
+						<button class="btn btn-outline-success"><ion-icon name="thumbs-up"></ion-icon> Like this post</button>
+					</form>
+				{% endif %}
+			{% else %}
+				<button class="btn btn-outline-success" disabled>Login to like this post</button>
+			{% endif %}
+		</div>
 	</div>
-</div>
--->
+	-->
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			var paragraphs = document.querySelectorAll('#content-containerp');
+			paragraphs.forEach(function(p) {
+				p.classList.add('lead');
+			});
+		});
+	</script>
 {% endblock content %}
