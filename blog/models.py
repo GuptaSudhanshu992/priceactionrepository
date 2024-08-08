@@ -20,8 +20,8 @@ class BlogPost(models.Model):
     title = models.CharField(max_length=255, unique=True)
     post_url = models.CharField(max_length=255, unique=True, blank=True)
     featured_image = models.ForeignKey(Image, on_delete=models.SET_NULL, null=True, blank=True, related_name='featured_blog_posts')
-    content = HTMLField()
     content = RichTextField(config_name='awesome_ckeditor')
+    content_snippet = models.TextField()
     date = models.DateField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     featured = models.BooleanField(default=False)
@@ -40,3 +40,6 @@ class BlogPost(models.Model):
         words = len(self.content.split())
         reading_time_minutes = math.floor(words/200)
         return reading_time_minutes
+    
+    class Meta:
+        ordering = ['-id']

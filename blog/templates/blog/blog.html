@@ -8,22 +8,21 @@
 {% block content %}
 
 	{% for object in object_list %}
-	<div class="row my-3" onclick="window.location.href='{% url 'blogpost' object.post_url %}';">
-		<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border border-grey p-3" id="blog-card">
-			<div class="image-container" style="width:100%;height:250px;overflow:auto;">
-				<img class="" style="width:100%;height:100%;object-fit:cover;top:0;left:0;" src="{{ object.featured_image.image.url }}" alt="{{ object.featured_image.alt }}">
+		<div class="row my-3" onclick="window.location.href='{% url 'blogpost' object.post_url %}';">
+			<div class="col-md-8 col-12 mx-md-auto mx-3 mb-3 mt-3 border border-grey p-3" id="blog-card">
+				<div class="image-container mb-3" style="width:100%;height:250px;overflow:auto;">
+					<img class="" style="width:100%;height:100%;object-fit:cover;top:0;left:0;" src="{{ object.featured_image.image.url }}" alt="{{ object.featured_image.alt }}">
+				</div>
+				<h3><strong>{{ object.title }}</strong></h3>
+				<p class="text-muted">{{ object.date }} &#9913; {{ object.reading_time }} min read</p>
+				<div class="my-3">
+					<p class="text-justify">{{ object.content_snippet|safe }}</p>
+				</div>
+				{% if object.likes.count > 1 %}
+					<p class="text-muted">{{ object.likes.count }} people like this post</p>
+				{% endif %}
 			</div>
-			<h3><strong>{{ object.title }}</strong></h3>
-			<p class="text-muted">{{ object.author.email }} &#9913; {{ object.date }} &#9913; {{ object.reading_time }} min read</p>
-			<div class="my-3">
-				{{ object.content|truncatewords_html:50|safe }}
-			</div>
-			
-			{% if object.likes.count > 1 %}
-				<p class="text-muted">{{ object.likes.count }} people like this post</p>
-			{% endif %}
 		</div>
-	</div>
 	{% endfor %}
 	
 	{% if page_obj.paginator.num_pages > 1 %}
