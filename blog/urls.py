@@ -7,4 +7,4 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('', BlogView.as_view(), name='blog'),
     path('<slug:post_url>/', DetailArticleView.as_view(), name='blogpost'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
