@@ -6,7 +6,7 @@
 {% block content %}
 	<div class="row justify-content-center mt-5 mb-5">
 		<div class="col-md-6">
-			<form action="{% url 'register' %}" method="POST">
+			<form action="{% url 'register' %}" id="registration_form" method="POST">
 				{% csrf_token %}
 				<div class="form-group d-flex">
 					<input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter your first name" value="Sudhanshu" required>
@@ -50,7 +50,7 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<button type="submit" class="btn btn-success btn-block">Sign Up</button>
+				<button type="submit" id="register_button" class="btn btn-success btn-block">Sign Up</button>
 			</form>
 			<hr>
 			<div class="text-center">
@@ -73,3 +73,73 @@
 		</div>
 	</div>
 {% endblock content %}
+
+{% block script %}
+	<script>
+		document.getElementById('registration_form').addEventListener('submit', async function(event) {
+			event.preventDefault();
+			
+			const button = document.getElementById('register_button');
+			const firstname = document.getElementById('firstname').value;
+			const lastname = document.getElementById('lastname').value;
+			const email = document.getElementById('email').value;
+			const password1 = document.getElementById('password1').value;
+			const password2 = document.getElementById('password2').value;
+			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+			const referrer = isReferrerFromCurrentDomain(document.referrer) ? document.referrer : window.location.origin;
+			const response_message = document.getElementById('response_messages')
+			
+			response_message.innerHTML="";
+			response_message.style.display="none";
+			response_message.classList.remove('alert-success');
+			response_message.classList.remove('alert-danger');
+			
+			button.disabled = true;
+			button.className = 'btn btn-success btn-block';
+			button.innerHTML = 'Registering... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+			try {
+				const response = await fetch("{% url 'register' %}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'X-CSRFToken': csrfToken
+					},
+					body: new URLSearchParams({
+						firstname: firstname,
+						lastname: lastname,
+						email: email,
+						password1: password1,
+						password2: password2,
+						referrer: referrer
+					})
+				});
+
+				const data = await response.json();
+
+				if (data.success) {
+					response_message.innerHTML=data.message;
+					response_message.style.display="block";
+					response_message.classList.add('alert-success');
+					setTimeout(() => {
+						window.location.href = data.redirect_url;
+					}, 3000);
+				} else {
+					console.log('Registration attempt failed!');
+					button.disabled = false;
+					button.innerHTML = 'Sign Up';
+					response_message.innerHTML=data.message;
+					response_message.style.display="block";
+					response_message.classList.add('alert-danger');
+				}
+			} catch (error) {
+				console.error('Request error:', error);
+				button.disabled = false;
+				button.innerHTML = 'Sign Up';
+				response_message.innerHTML='Unexpected error has occurred, please refresh the page and try again...';
+				response_message.style.display="block";
+				response_message.classList.add('alert-danger');
+			}
+		});
+	</script>
+{% endblock script %}

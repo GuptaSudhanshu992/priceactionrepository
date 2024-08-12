@@ -46,15 +46,16 @@
 					</li>
 					{% if request.user.is_authenticated %}
 						<li class="d-flex nav-item align-items-center" id="signout-btn">
-							<form action="{% url 'logout' %}" method="POST">
+							<form action="{% url 'logout' %}" method="POST" id="logout_form">
 								{% csrf_token %}
-								<button class="btn btn-sm btn-outline-dark border-0" type="submit">SIGN OUT</button>
+								<input type="hidden" id="logout_referrer" name="logout_referrer" value="">
+								<button id="logout_btn" class="btn btn-sm btn-outline-dark border-0" onclick="handleLogout()" type="submit">SIGN OUT</button>
 							</form>
 						</li>
 					{% else %}
 						<li class="d-flex nav-item align-items-center">
 							<div class="btn-group" role="group" aria-label="myaccount">
-							  <a type="button" class="btn btn-success btn-sm rounded-5" href="{% url 'register' %}">SIGN UP</a>
+							  <a type="button" class="btn btn-success btn-sm" href="{% url 'register' %}">SIGN UP</a>
 							  <a type="button" class="btn btn-outline-success btn-sm" href="{% url 'login' %}">SIGN IN</a>
 							</div>
 						</li>
@@ -62,7 +63,13 @@
 				</ul>
 			</div>
 		</nav>
-	
+
+		<div class="alert alert-dismissible fade show" role="alert" id="response_messages" style="display:none;">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		
 	{% if messages %}
 		<div id="messages">
 			{% for message in messages %}
@@ -88,7 +95,7 @@
 	
 	{% endblock content %}
 
-	  <footer class="col-md-4 py-4 my-4 border-top" style="font-family: Oswald;>
+	  <footer class="col-md-4 py-4 my-4 border-top" style="font-family: Oswald;">
 		<div class="text-center">
 		  <p class="mb-3 mb-md-0 text-body-secondary">&copy; 2024 Price Action Repository</p>
 		</div>
@@ -123,6 +130,72 @@
 				alertElement.style.display = 'none';
             }
         }
-    </script>
+	</script>
+	<script>
+		async function handleLogout() {
+			const button = document.getElementById('logout_btn');
+			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+			const referrer = window.location.href;
+			const response_message = document.getElementById('response_messages');
+
+			response_message.innerHTML = "";
+			response_message.style.display = "none";
+			response_message.classList.remove('alert-success', 'alert-danger');
+
+			button.disabled = true;
+			button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+			try {
+				const response = await fetch("{% url 'logout' %}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'X-CSRFToken': csrfToken
+					},
+					body: new URLSearchParams({
+						'referrer': referrer,
+					})
+				});
+
+				const data = await response.json();
+
+				if (data.success) {
+					response_message.innerHTML = data.message;
+					response_message.style.display = "block";
+					response_message.classList.add('alert-success');
+					setTimeout(() => {
+						window.location.href = data.redirect_url;
+						console.log("Redirection url : ", data.redirect_url);
+					}, 1000);
+				} else {
+					console.log('Logout attempt failed!');
+					button.disabled = false;
+					button.innerHTML = 'SIGN OUT';
+					response_message.innerHTML = data.message;
+					response_message.style.display = "block";
+					response_message.classList.add('alert-danger');
+				}
+			} catch (error) {
+				console.error('Request error:', error);
+				button.disabled = false;
+				button.innerHTML = 'SIGN OUT';
+				response_message.innerHTML = 'Unexpected error has occurred, please refresh the page and try again...';
+				response_message.style.display = "block";
+				response_message.classList.add('alert-danger');
+			}
+		}
+		
+		function isReferrerFromCurrentDomain(referrer) {
+			try{
+				const currentDomain = window.location.hostname;
+				const referrerDomain = new URL(referrer).hostname;
+				
+				return currentDomain === referrerDomain;
+			}catch (error){
+				return false;
+			}
+		}
+	</script>
+	{% block script %}{% endblock script %}
 </body>
 </html>
