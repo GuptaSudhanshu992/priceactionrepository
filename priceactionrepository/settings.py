@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'members',
     'blog',
     'ckeditor',
+    'compressor',
+    'django_minify_html',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,7 +48,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_minify_html.middleware.MinifyHtmlMiddleware',
 ]
 
 ROOT_URLCONF = 'priceactionrepository.urls'
@@ -127,11 +130,21 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+STATICFILES_FINDERS = [
+    'compressor.finders.CompressorFinder',
+]
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'django_libsass.SassCompiler'),
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -157,4 +170,11 @@ CKEDITOR_CONFIGS = {
     'awesome_ckeditor': {
         'toolbar': 'Full',
     },
+}
+
+MINIFY_HTML = {
+    'remove_comments': True,
+    'remove_empty_space': True,
+    'remove_empty_attributes': True,
+    'collapse_whitespace': True,
 }
