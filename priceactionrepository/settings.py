@@ -80,10 +80,10 @@ WSGI_APPLICATION = 'priceactionrepository.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'u345655090_django_blog',
-        'USER': 'u345655090_sudhanshu',
-        'PASSWORD': 'Gratitude@2024',
-        'HOST': '82.180.142.1',   # Or an IP Address that your DB is hosted on
+        'NAME': 'priceactionrepository',
+        'USER': 'admin',
+        'PASSWORD': 'Gratitude_2024',
+        'HOST': 'database.cd8q0y6umyg3.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
         'OPTIONS': {
             'sql_mode': 'STRICT_TRANS_TABLES,STRICT_ALL_TABLES',
