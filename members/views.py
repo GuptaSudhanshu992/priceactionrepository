@@ -15,18 +15,19 @@ from django.conf import settings
 from django.urls import reverse
 from .tokens import account_activation_token
 import re
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 User = get_user_model()
         
 class RegisterView(View):    
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if request.user is not None:
             if request.user.is_authenticated:
-                #messages.info(request, 'Hi, You already seemed to be logged in from an account, kindly logout if you want to create a new account!')
                 return redirect('/blog/')
         return render(request=request, template_name='members/signup.html')
         
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         firstname = request.POST.get('firstname')
         lastname = request.POST.get('lastname')
         email = request.POST.get('email')
@@ -37,13 +38,10 @@ class RegisterView(View):
         is_pwd_valid, password_validation_message = is_password_valid(password1, password2)
         
         if not firstname or not email or not password1 or not password2:
-            #messages.warning(request, 'All fields are required.')
             message = 'All fields are required.'
         elif User.objects.filter(email=email).exists():
-            #messages.warning(request, 'Email is already registered.')
             message = 'Email is already registered.'
         elif not is_pwd_valid:
-            #messages.warning(request, password_validation_message)
             message = password_validation_message
         else:
             try:
@@ -56,14 +54,12 @@ class RegisterView(View):
                 user.save()
                 login(request, user)
                 send_welcome_email(request, email, firstname, lastname)
-                #messages.success(request, 'You have registered successfully, Welcome to the team!')
                 return JsonResponse({
                     'success': True,
                     'message':'Congratulations, You have registered successfully, Welcome to the team!<br>Redirecting in 2 seconds...',
                     'redirect_url':referrer,
                 })
             except ValidationError as e:
-                #messages.warning(request, str(e))
                 return JsonResponse({
                     'success': False,
                     'message': f'Error Occurred : {str(e)}',
@@ -73,22 +69,19 @@ class RegisterView(View):
                     'success': False,
                     'message': f'Error Occurred : {str(e)}',
                 })
-                #messages.warning(request, str(e))
         return JsonResponse({
                     'success': False,
                     'message': message,
                 })
-        #render(request=request, template_name='members/signup.html')
 
 class LoginView(View):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if request.user is not None:
             if request.user.is_authenticated:
-                #messages.info(request, 'You are already logged in...')
                 return redirect('/blog/')
         return render(request=request, template_name='members/login.html')
     
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
         password = request.POST.get('password')
         referrer = request.POST.get('referrer', "{% url 'blog' %}")
@@ -107,11 +100,11 @@ class LoginView(View):
             })
 
 class UserView(View):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         return null
 
 class LogoutView(View):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         try:
             referrer = request.POST.get('referrer', "{% url 'blog' %}")
             logout(request)
@@ -128,13 +121,13 @@ class LogoutView(View):
                 })
             
 class ForgotPasswordView(View):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if request.user is not None:
             if request.user.is_authenticated:
                 return redirect('/blog/')
         return render(request=request, template_name='members/forgotpassword.html')
     
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
         referrer = request.POST.get('referrer')
         user = User.objects.filter(email=email).first()
@@ -174,7 +167,7 @@ class ResetPasswordView(View):
         else:
             return HttpResponse("Invalid Reset Link")
     
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         uidb64 = request.POST.get('uidb64')
         token = request.POST.get('token')
         password1 = request.POST.get('password1')
@@ -182,7 +175,6 @@ class ResetPasswordView(View):
         referrer = request.POST.get('referrer')
         is_pwd_valid, pwd_validation_msg = is_password_valid(password1, password2)
         if not is_pwd_valid:
-            #messages.warning(request, pwd_validation_msg)
             message=pwd_validation_msg
         else:
             try:
@@ -192,7 +184,6 @@ class ResetPasswordView(View):
                 if user is not None: #and account_activation_token.check_token(user, token):
                     user.set_password(password1)
                     user.save()
-                    #messages.success(request, 'Your password has been reset successfully. You can now log in with the new password.')
                     message='Your password has been reset successfully. You can now log in with the new password.'
                     return JsonResponse({
                     'success': True,
@@ -200,7 +191,6 @@ class ResetPasswordView(View):
                     'redirect_url': referrer
                     })
                 else:
-                    #messages.warning(request, 'Invalid password reset link.')
                     message='Invalid password reset link.'
             except (TypeError, ValueError, OverflowError, User.DoesNotExist):
                 user = None
@@ -211,8 +201,36 @@ class ResetPasswordView(View):
                     'uidb64': uidb64,
                     'token': token
                     })
-        #render(request, 'members/reset_password.html', {'uidb64': uidb64, 'token': token})
 
+@csrf_exempt
+def Register_API(request, *args, **kwargs):
+    if request.method == 'POST':
+        register_view = RegisterView.as_view()
+        response = register_view(request)
+        return response
+    else:
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+        
+@csrf_exempt
+@require_POST
+def Login_API(request, *args, **kwargs):
+    print("Request Method is : ", request.method)
+    if request.method == 'POST':
+        login_view = LoginView.as_view()
+        response = login_view(request)
+        return response
+    else:
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+    
+@csrf_exempt
+def Logout_API(request, *args, **kwargs):
+    if request.method == 'POST':
+        logout_view = LogoutView.as_view()
+        response = logout_view(request)
+        return response
+    else:
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+    
 def is_password_valid(password1, password2):
     if password1 != password2:
         return False, 'Password and Confirm password must match.'

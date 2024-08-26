@@ -25,6 +25,7 @@ urlpatterns = [
     path('blog/', include('blog.urls')),
     path('members/', include('members.urls')),
     path('tinymce/', include('tinymce.urls')),
+    path('auth/', include('social_django.urls', namespace='social')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 #handler404 = 'blog.views.custom_404'

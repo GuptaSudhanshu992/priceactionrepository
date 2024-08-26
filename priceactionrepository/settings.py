@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'blog',
     'ckeditor',
     'compressor',
+    'social_django',
     'django_minify_html',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_minify_html.middleware.MinifyHtmlMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'priceactionrepository.urls'
@@ -66,6 +68,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'blog.context_processors.current_url',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -73,17 +77,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'priceactionrepository.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'priceactionrepository',
-        'USER': 'admin',
-        'PASSWORD': 'Gratitude_2024',
-        'HOST': 'database.cd8q0y6umyg3.us-east-1.rds.amazonaws.com',
+        'NAME': 'u345655090_django_blog',
+        'USER': 'u345655090_sudhanshu',
+        'PASSWORD': 'Gratitude@2024',
+        'HOST': '82.180.142.1',
         'PORT': '3306',
         'OPTIONS': {
             'sql_mode': 'STRICT_TRANS_TABLES,STRICT_ALL_TABLES',
@@ -165,6 +168,19 @@ EMAIL_USE_SSL = True
 EMAIL_PORT = 465
 EMAIL_HOST_USER = 'admin@equityanalysis.co.in'
 EMAIL_HOST_PASSWORD = 'EquityAnalysis@2023'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+SOCIAL_AUTH_REQUIRE_POST = True
 
 CKEDITOR_CONFIGS = {
     'awesome_ckeditor': {

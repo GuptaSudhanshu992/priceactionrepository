@@ -30,13 +30,13 @@
 			<div class="text-center">
 				<p>Or login using</p>
 				<div class="d-flex flex-row">
-					<a href="/auth/google" class="btn btn-danger mr-2 flex-grow-1" aria-label="Login with Google">
+					<a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-danger mr-2 flex-grow-1" aria-label="Login with Google">
 						<i class="fab fa-google"></i>
 					</a>
-					<a href="/auth/facebook" class="btn btn-primary mr-2 flex-grow-1" aria-label="Login with Facebook">
+					<a href="" class="btn btn-primary mr-2 flex-grow-1" aria-label="Login with Facebook">
 						<i class="fab fa-facebook-f"></i>
-					</a>
-					<a href="/auth/apple" class="btn btn-dark flex-grow-1" aria-label="Login with Apple">
+					</a><!-- class="" -->
+					<a href="" class="g-signin2 btn btn-dark flex-grow-1" aria-label="Login with Apple">
 						<i class="fab fa-apple"></i>
 					</a>
 				</div>
@@ -50,6 +50,21 @@
 
 {% block script %}
 	<script>
+		function onSignIn(googleUser) {
+		  var profile = googleUser.getBasicProfile();
+		  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+		  console.log('Name: ' + profile.getName());
+		  console.log('Image URL: ' + profile.getImageUrl());
+		  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+		}
+
+	  function signOut() {
+		var auth2 = gapi.auth2.getAuthInstance();
+		auth2.signOut().then(function () {
+		  console.log('User signed out.');
+		});
+	  }
+
 		document.getElementById('login-form').addEventListener('submit', async function(event) {
 			event.preventDefault();
 			
