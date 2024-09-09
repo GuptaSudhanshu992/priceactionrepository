@@ -1,0 +1,1 @@
+var isUserLoggedIn=document.getElementById('logout_btn');window.onload=function(){alert(isUserLoggedIn);if(!isUserLoggedIn){google.accounts.id.initialize({client_id:"742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com",callback:handleGoogleOneTapSignIn});google.accounts.id.prompt();}};

@@ -21,17 +21,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-bplo4@u4fb-ije++qo(k6*j#yz3o#dcsoyq%&cvm544@6%yt%7'
 
+TOKEN_SECRET_KEY = "b'i3ipqGtlhRnj7g69Hb61B5Sje-JdUPxJizBbUZ9mSt8='"
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+SITE_ID = 3
 
 INSTALLED_APPS = [
     'members',
     'blog',
     'ckeditor',
     'compressor',
-    'social_django',
     'django_minify_html',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,7 +42,38 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'django_extensions',
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        'APP': {
+            'client_id': '742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com',
+            'secret': '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',
+            'key': ''
+        },
+        "SCOPE":[
+            "profile",
+            "email"
+        ],
+        "AUTH_PARAMS":{"access_type":"online"},
+        'PROFILE_FIELDS': [
+            'email',
+            'first_name',
+            'last_name',
+        ],
+    }
+}
+
+SOCIALACCOUNT_FORMS = {
+    'disconnect': 'allauth.socialaccount.forms.DisconnectForm',
+    'signup': 'allauth.socialaccount.forms.SignupForm',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -51,7 +85,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_minify_html.middleware.MinifyHtmlMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'priceactionrepository.urls'
@@ -68,8 +102,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'blog.context_processors.current_url',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -93,6 +125,13 @@ DATABASES = {
         },
     }
 }
+
+# DATABASES = {
+    # 'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -154,7 +193,7 @@ COMPRESS_PRECOMPILERS = (
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'members.CustomUser'
+AUTH_USER_MODEL = 'members.Members'
 
 APPEND_SLASH = True
 
@@ -168,19 +207,23 @@ EMAIL_USE_SSL = True
 EMAIL_PORT = 465
 EMAIL_HOST_USER = 'admin@equityanalysis.co.in'
 EMAIL_HOST_PASSWORD = 'EquityAnalysis@2023'
+DEFAULT_FROM_EMAIL = 'admin@equityanalysis.co.in'
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIALACCOUNT_ADAPTER = 'members.adapter.MySocialAccountAdapter'
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
-SOCIAL_AUTH_REQUIRE_POST = True
+LOGIN_REDIRECT_URL = 'https://equityanalysis.org:8000/blog/'
+LOGOUT_REDIRECT_URL = 'https://equityanalysis.org:8000/blog/'
 
 CKEDITOR_CONFIGS = {
     'awesome_ckeditor': {
@@ -194,3 +237,6 @@ MINIFY_HTML = {
     'remove_empty_attributes': True,
     'collapse_whitespace': True,
 }
+
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"

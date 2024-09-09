@@ -1,0 +1,2 @@
+function handleCredentialResponse2(response){alert("callback handled");console.log("Encoded JWT ID token: "+response.credential);}
+window.onload=function(){google.accounts.id.initialize({client_id:"742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com",callback:handleCredentialResponse});google.accounts.id.prompt();};

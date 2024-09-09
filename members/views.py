@@ -11,15 +11,16 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
-from django.conf import settings
 from django.urls import reverse
 from .tokens import account_activation_token
 import re
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
+import requests
 
 User = get_user_model()
-        
+
 class RegisterView(View):    
     def get(self, request, *args, **kwargs):
         if request.user is not None:
@@ -28,30 +29,31 @@ class RegisterView(View):
         return render(request=request, template_name='members/signup.html')
         
     def post(self, request, *args, **kwargs):
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        email = request.POST.get('email')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        referrer = request.POST.get('referrer')
-        
-        is_pwd_valid, password_validation_message = is_password_valid(password1, password2)
-        
-        if not firstname or not email or not password1 or not password2:
-            message = 'All fields are required.'
-        elif User.objects.filter(email=email).exists():
-            message = 'Email is already registered.'
-        elif not is_pwd_valid:
-            message = password_validation_message
-        else:
-            try:
+        try:
+            firstname = request.POST.get('firstname')
+            lastname = request.POST.get('lastname')
+            email = request.POST.get('email')
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            auth_method = request.POST.get('auth_method')
+            referrer = request.POST.get('referrer')
+            is_pwd_valid, password_validation_message = is_password_valid(password1, password2)
+            if not firstname or not email or not password1 or not password2:
+                message = 'All fields are required.'
+            elif User.objects.filter(email=email).exists():
+                message = 'Email is already registered.'
+            elif not is_pwd_valid:
+                message = password_validation_message
+            else:
                 user = User.objects.create_user(
                     email=email,
                     password=password1,
                     firstname=firstname,
-                    lastname=lastname
+                    lastname=lastname,
+                    auth_method=auth_method
                 )
                 user.save()
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
                 send_welcome_email(request, email, firstname, lastname)
                 return JsonResponse({
@@ -59,20 +61,20 @@ class RegisterView(View):
                     'message':'Congratulations, You have registered successfully, Welcome to the team!<br>Redirecting in 2 seconds...',
                     'redirect_url':referrer,
                 })
-            except ValidationError as e:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Error Occurred : {str(e)}',
-                })
-            except Exception as e:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Error Occurred : {str(e)}',
-                })
-        return JsonResponse({
-                    'success': False,
-                    'message': message,
-                })
+            return JsonResponse({
+                        'success': False,
+                        'message': message,
+                    })
+        except ValidationError as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error Occurred : {str(e)}',
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error Occurred : {str(e)}',
+            })
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -85,19 +87,33 @@ class LoginView(View):
         email = request.POST.get('email')
         password = request.POST.get('password')
         referrer = request.POST.get('referrer', "{% url 'blog' %}")
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            return JsonResponse({
-                'success': True,
-                'message':'Login Successful! Redirecting in 2 seconds...',
-                'redirect_url': referrer
-            })
+        
+        if User.objects.filter(email=email).exists():
+            if User.objects.get(email=email).auth_method == 'Email':
+                user = authenticate(request, username=email, password=password)
+                if user is not None:
+                    user.backend = 'django.contrib.auth.backends.ModelBackend'
+                    login(request, user)
+                    return JsonResponse({
+                        'success': True,
+                        'message':'Login Successful! Redirecting in 2 seconds...',
+                        'redirect_url': referrer
+                    })
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message':'Invalid Email or Password, please try again...',
+                    })
+            else:
+                return JsonResponse({
+                        'success': False,
+                        'message':'Please use your social account, to login to the application...',
+                    })
         else:
             return JsonResponse({
-                'success': False,
-                'message':'Invalid Email or Password, please try again...',
-            })
+                    'success': False,
+                    'message':'Email address is not registered with us...',
+                })
 
 class UserView(View):
     def get(self, request, *args, **kwargs):
@@ -201,8 +217,67 @@ class ResetPasswordView(View):
                     'uidb64': uidb64,
                     'token': token
                     })
-
+                    
 @csrf_exempt
+@require_POST
+def g_social_login(request, *args, **kwargs):
+    try:
+        id_token = request.POST.get('id_token')
+        auth_method = 'Google'
+        referrer = request.POST.get('referrer','/blog/')
+        
+        token_verification_url = f'https://oauth2.googleapis.com/tokeninfo?id_token={id_token}'
+        response = requests.get(token_verification_url)
+        token_info = response.json()
+
+        email = token_info['email']
+        firstname = token_info['given_name']
+        lastname = token_info['family_name']
+        is_verified = token_info['email_verified']
+        if 'error_description' in token_info:
+            return JsonResponse({'success': False, 'message': token_info["error_description"]}, status=400)
+            
+        try:
+            user = User.objects.get(email=email, auth_method=auth_method)
+        except:
+            user = User.objects.create_user(
+                email=email,
+                firstname=firstname,
+                lastname=lastname,
+                auth_method=auth_method,
+                is_verified=True
+            )
+            user.save()
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            send_welcome_email(request, email, firstname, lastname)
+            return JsonResponse({
+                'success': True,
+                'message':'Congratulations, You have registered successfully, Welcome to the team!<br>Redirecting in 2 seconds...',
+                'redirect_url':referrer,
+            })
+            
+        if user is not None:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            return JsonResponse({
+                'success': True,
+                'message':'Login Successful! Redirecting in 2 seconds...',
+                'redirect_url': referrer
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message':'User does not exist'
+            })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+    
+@csrf_exempt
+@require_POST
 def Register_API(request, *args, **kwargs):
     if request.method == 'POST':
         register_view = RegisterView.as_view()
@@ -223,6 +298,7 @@ def Login_API(request, *args, **kwargs):
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
     
 @csrf_exempt
+@require_POST
 def Logout_API(request, *args, **kwargs):
     if request.method == 'POST':
         logout_view = LogoutView.as_view()
@@ -230,7 +306,7 @@ def Logout_API(request, *args, **kwargs):
         return response
     else:
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
-    
+ 
 def is_password_valid(password1, password2):
     if password1 != password2:
         return False, 'Password and Confirm password must match.'

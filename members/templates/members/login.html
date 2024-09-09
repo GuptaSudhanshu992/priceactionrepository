@@ -1,5 +1,10 @@
 {% extends 'blog/base.html' %}
 
+{% load socialaccount %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
 {% block sectionheading %}Welcome Back!{% endblock sectionheading %}
 {% block subsectionheading %}Login to your account and continue where you left off{% endblock subsectionheading %}
 
@@ -29,16 +34,39 @@
 			<hr>
 			<div class="text-center">
 				<p>Or login using</p>
-				<div class="d-flex flex-row">
-					<a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}" class="btn btn-danger mr-2 flex-grow-1" aria-label="Login with Google">
-						<i class="fab fa-google"></i>
-					</a>
-					<a href="" class="btn btn-primary mr-2 flex-grow-1" aria-label="Login with Facebook">
+				<div class="row">
+					<!--
+					<form id="googleloginform" class="border mr-2 flex-grow-1" action="{% provider_login_url 'google' process='connect' %}?next=/blog/" method="POST">
+						{% csrf_token %}
+						<button id="gloginbtn" class="btn btn-danger w-100 h-100" type="submit" aria-label="Login with Google">
+							<i class="fab fa-google"></i>
+						</button>
+					</form>
+					-->
+					<span id="g_id_onload"
+						data-client_id="742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com"
+						data-context="signin"
+						data-ux_mode="popup"
+						data-callback="handleCredentialResponse"
+						data-nonce=""
+						data-itp_support="true">
+					</span>
+					
+					<span class="g_id_signin mr-2"
+						data-type="standard"
+						data-shape="rectangular"
+						data-theme="filled_blue"
+						data-text="signin_with"
+						data-size="large"
+						data-logo_alignment="left"
+						data-width="50">
+					</span>
+					<button class="btn btn-primary mr-2 flex-grow-1" type="submit" aria-label="Login with Facebook">
 						<i class="fab fa-facebook-f"></i>
-					</a><!-- class="" -->
-					<a href="" class="g-signin2 btn btn-dark flex-grow-1" aria-label="Login with Apple">
+					</button>
+					<button class="btn btn-dark mr-2 flex-grow-1" type="submit"  aria-label="Login with Apple">
 						<i class="fab fa-apple"></i>
-					</a>
+					</button>
 				</div>
 			</div>
 			<div class="text-center mt-3 mb-5">
@@ -49,22 +77,79 @@
 {% endblock content %}
 
 {% block script %}
-	<script>
-		function onSignIn(googleUser) {
-		  var profile = googleUser.getBasicProfile();
-		  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-		  console.log('Name: ' + profile.getName());
-		  console.log('Image URL: ' + profile.getImageUrl());
-		  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+	<script>		
+		function handleCredentialResponse(response) {
+			document.getElementById('pageloadspinner').classList.remove('hidden');
+			document.getElementById('pageloadspinner').innerHTML = "Please Wait, Signing in..."
+			const jwt_token = response.credential;
+			googleLoginRequest(jwt_token);
 		}
+		
+		async function googleLoginRequest(jwt_token){
+			//const button = document.getElementById('g_id_signin');
+			//const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+			const referrer = isReferrerFromCurrentDomain(document.referrer) ? document.referrer : window.location.origin;
+			const response_message = document.getElementById('response_messages')
+			const id_token = jwt_token;
+			console.log("variables initialized");
+			
+			response_message.innerHTML="";
+			response_message.style.display="none";
+			response_message.classList.remove('alert-success');
+			response_message.classList.remove('alert-danger');
+			console.log("response_message unset");
 
-	  function signOut() {
-		var auth2 = gapi.auth2.getAuthInstance();
-		auth2.signOut().then(function () {
-		  console.log('User signed out.');
-		});
-	  }
+			//button.disabled = true;
+			//button.className = 'btn btn-block';
+			//button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+			try {
+				const login_response = await fetch("{% url 'g_social_login' %}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+					},
+					body: new URLSearchParams({
+						id_token: id_token,
+						referrer: referrer
+					})
+				});
 
+				const data = await login_response.json();
+
+				if (data.success) {
+					response_message.innerHTML=data.message;
+					response_message.style.display="block";
+					response_message.classList.add('alert-success');
+					//button.innerHTML = '<i class="fab fa-google"></i>';
+					//button.disabled = false;
+					setTimeout(() => {
+						window.location.href = data.redirect_url;
+					}, 1000);
+				} else if (data.method){
+					//console.log('Login attempt failed!');
+					//button.disabled = false;
+					//button.innerHTML = 'Login';
+					if (confirm(data.message)) {
+					  console.log('Create google account');
+					} else {
+					  console.log('Not Create google account and go back to login page');
+					} 
+				} else{
+					response_message.innerHTML=data.message;
+					response_message.style.display="block";
+					response_message.classList.add('alert-danger');
+				}
+			} catch (error) {
+				console.error('Request error:', error);
+				//button.innerHTML = '<i class="fab fa-google"></i>';
+				//button.disabled = false;
+				response_message.innerHTML='Unexpected error has occurred, please refresh the page and try again...';
+				response_message.style.display="block";
+				response_message.classList.add('alert-danger');
+			}
+			document.getElementById('pageloadspinner').classList.add('hidden');
+		}
+				
 		document.getElementById('login-form').addEventListener('submit', async function(event) {
 			event.preventDefault();
 			
@@ -106,7 +191,7 @@
 					response_message.classList.add('alert-success');
 					setTimeout(() => {
 						window.location.href = data.redirect_url;
-					}, 3000);
+					}, 1000);
 				} else {
 					console.log('Login attempt failed!');
 					button.disabled = false;

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 
-class CustomUserManager(BaseUserManager):
+class MembersManager(BaseUserManager):
     def create_user(self, email, firstname=None, lastname=None, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
@@ -17,20 +17,19 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, firstname, lastname, password, **extra_fields)
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class Members(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     firstname = models.CharField(max_length=50, null=True, blank=True)
     lastname = models.CharField(max_length=50, null=True, blank=True)
+    auth_method = models.CharField(max_length=50, default=None, blank=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
 
-    objects = CustomUserManager()
+    objects = MembersManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
-    def __str__(self):
-        return self.email
 
     def get_full_name(self):
         return f"{self.firstname} {self.lastname}"

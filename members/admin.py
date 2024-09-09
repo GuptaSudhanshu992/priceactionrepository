@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser
+from .models import Members
 from django.contrib.sessions.models import Session
 
 class SessionAdmin(admin.ModelAdmin):
@@ -8,6 +8,12 @@ class SessionAdmin(admin.ModelAdmin):
     def get_decoded(self, obj):
         return obj.get_decoded()
     get_decoded.short_description = 'Session Data'
+
+
+class MembersAdmin(admin.ModelAdmin):
+    list_display = ('email', 'firstname', 'lastname', 'auth_method', 'is_active', 'is_staff', 'is_verified')
+    list_filter = ('is_active', 'is_staff', 'auth_method')
+    search_fields = ('email', 'firstname', 'lastname')
     
-admin.site.register(CustomUser)
+admin.site.register(Members, MembersAdmin)
 admin.site.register(Session, SessionAdmin)

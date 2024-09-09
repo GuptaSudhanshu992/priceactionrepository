@@ -3,9 +3,8 @@ from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 from tinymce.models import HTMLField
 from ckeditor.fields import RichTextField
+from django.conf import settings
 import math
-
-User = get_user_model()
 
 class Image(models.Model):
     caption = models.CharField(max_length=255)
@@ -23,9 +22,9 @@ class BlogPost(models.Model):
     content = RichTextField(config_name='awesome_ckeditor')
     content_snippet = models.TextField()
     date = models.DateField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
     featured = models.BooleanField(default=False)
-    likes = models.ManyToManyField(User, related_name='likes', blank=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='likes', blank=True)
 
     def save(self, *args, **kwargs):
         if not self.post_url or self.title != BlogPost.objects.get(pk=self.pk).title:

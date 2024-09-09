@@ -1,5 +1,10 @@
 {% extends 'blog/base.html' %}
 
+{% load socialaccount %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
 {% block sectionheading %}Join Us!{% endblock sectionheading %}
 {% block subsectionheading %}Create a new account and join us to unlock new horizons{% endblock subsectionheading %}
 
@@ -56,15 +61,24 @@
 			<div class="text-center">
 				<p>Or signup using</p>
 				<div class="d-flex flex-row">
-					<a href="/auth/google" class="btn btn-danger mr-2 flex-grow-1">
-						<i class="fab fa-google"></i>
-					</a>
-					<a href="/auth/facebook" class="btn btn-primary mr-2 flex-grow-1">
-						<i class="fab fa-facebook-f"></i>
-					</a>
-					<a href="/auth/apple" class="btn btn-dark flex-grow-1">
-						<i class="fab fa-apple"></i>
-					</a>
+					<form class="border mr-2 flex-grow-1" action="{% provider_login_url 'google' process='connect' %}?next=/blog/" method="POST">
+						{% csrf_token %}
+						<button class="btn btn-danger w-100 h-100" type="submit" aria-label="Login with Google">
+							<i class="fab fa-google"></i>
+						</button>
+					</form>
+					<form class="border mr-2 flex-grow-1" action="" method="POST">
+						{% csrf_token %}
+						<button class="btn btn-primary w-100 h-100" type="submit" aria-label="Login with Facebook">
+							<i class="fab fa-facebook-f"></i>
+						</button>
+					</form>
+					<form class="border mr-2 flex-grow-1" action="" method="POST">
+						{% csrf_token %}
+						<button class="btn btn-dark w-100 h-100" type="submit"  aria-label="Login with Apple">
+							<i class="fab fa-apple"></i>
+						</button>
+					</form>
 				</div>
 			</div>
 			<div class="text-center mt-3 mb-5">
@@ -85,6 +99,7 @@
 			const email = document.getElementById('email').value;
 			const password1 = document.getElementById('password1').value;
 			const password2 = document.getElementById('password2').value;
+			const auth_method = 'Email';
 			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 			const referrer = isReferrerFromCurrentDomain(document.referrer) ? document.referrer : window.location.origin;
 			const response_message = document.getElementById('response_messages')
@@ -111,6 +126,7 @@
 						email: email,
 						password1: password1,
 						password2: password2,
+						auth_method: auth_method,
 						referrer: referrer
 					})
 				});

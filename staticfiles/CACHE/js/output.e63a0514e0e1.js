@@ -1,0 +1,1 @@
+function start(){gapi.load('auth2',function(){auth2=gapi.auth2.init({client_id:'742784578451-kkps59hdh9fn38k47rtlomadklghd9pi.apps.googleusercontent.com',});});};
